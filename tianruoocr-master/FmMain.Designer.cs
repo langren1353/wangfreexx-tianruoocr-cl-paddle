@@ -87,6 +87,7 @@ namespace TrOCR
 			this.tencent = new global::System.Windows.Forms.ToolStripMenuItem();
 			this.baidu = new global::System.Windows.Forms.ToolStripMenuItem();
 			this.youdao = new global::System.Windows.Forms.ToolStripMenuItem();
+			this.mine = new global::System.Windows.Forms.ToolStripMenuItem();
 			this.Chinese = new global::System.Windows.Forms.ToolStripMenuItem();
 			this.English = new global::System.Windows.Forms.ToolStripMenuItem();
 			this.Split = new global::System.Windows.Forms.ToolStripMenuItem();
@@ -195,6 +196,8 @@ namespace TrOCR
 			this.baidu.Click += new global::System.EventHandler(this.OCR_baidu_Click);
 			this.youdao.Text = "有道";
 			this.youdao.Click += new global::System.EventHandler(this.OCR_youdao_Click);
+			this.mine.Text = "我的";
+			this.mine.Click += new global::System.EventHandler(this.OCR_mine_Click);
 			this.ocr_table.Text = "表格";
 			this.baidu_table.Text = "百度";
 			this.baidu_table.Click += new global::System.EventHandler(this.OCR_baidutable_Click);
@@ -241,6 +244,7 @@ namespace TrOCR
 				this.tencent,
 				//this.youdao,
 				this.baidu,
+				this.mine,
 				//this.toolStripSeparator1,
 				//this.Mathfuntion,
 				//this.ocr_table,
@@ -330,6 +334,8 @@ namespace TrOCR
 		public global::System.Windows.Forms.ToolStripItem baidu;
 
 		public global::System.Windows.Forms.ToolStripItem youdao;
+		
+		public global::System.Windows.Forms.ToolStripItem mine;
 
 		public global::System.Windows.Forms.ToolStripDropDownItem interface_button;
 

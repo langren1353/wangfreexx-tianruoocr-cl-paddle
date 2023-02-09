@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -506,11 +507,65 @@ namespace TrOCR
         {
         }
 
-        public void OCR_youdao()
+        public void OCR_youdao() // paddleOCR 正确率一般
         {
             try
             {
-                RichBoxBody.Text = "***未开放***";
+                // 直接请求目标接口，使用目标返回值即可
+                var url = "http://bt.deepin:9000/predict/ocr_system";
+                var data = "{ \"images\": [\"" + Convert.ToBase64String(OcrHelper.ImgToBytes(image_screen)) + "\"] }";
+                var res = CommonHelper.PostData(url, data, 1);
+
+                // 组装返回值
+                var res_data = ((JObject)JsonConvert.DeserializeObject(res))["results"];
+                var res_list = res_data[0];
+                var str_res = "";
+                foreach (var item in res_list)
+                {
+                    str_res += item["text"] + "\r\n";
+                }
+
+                var res_fan_out = str_res;
+                RichBoxBody.Text = res_fan_out;
+            }
+            catch
+            {
+                if (esc != "退出")
+                {
+                    RichBoxBody.Text = "***该区域未发现文本***";
+                }
+                else
+                {
+                    RichBoxBody.Text = "***该区域未发现文本***";
+                    esc = "";
+                }
+            }
+        }
+
+        public void OCR_mine()
+        {
+            try
+            {
+                // 直接请求目标接口，使用目标返回值即可
+                var url = "http://ocr.tujidu.com/api/tr-run/";
+                var data = "is_draw=0&img=" + HttpUtility.UrlEncode(Convert.ToBase64String(OcrHelper.ImgToBytes(image_screen)));
+                var res = CommonHelper.PostStrData(url, data);
+
+                // 组装返回值
+                var res_data = ((JObject)JsonConvert.DeserializeObject(res))["data"];
+                var res_list = res_data["raw_out"];
+                var str_res = "";
+                foreach (var item in res_list)
+                {
+                    var nowStr = item.First.Next.ToString();
+                    if(nowStr.Length > 0)
+                    {
+                        str_res += item.First.Next.ToString() + "\r\n";
+                    }
+                }
+
+                var res_fan_out = str_res;
+                RichBoxBody.Text = res_fan_out;
             }
             catch
             {
@@ -529,6 +584,11 @@ namespace TrOCR
         public void OCR_youdao_Click(object sender, EventArgs e)
         {
             OCR_foreach("有道");
+        }
+
+        public void OCR_mine_Click(object sender, EventArgs e)
+        {
+            OCR_foreach("我的");
         }
 
         public void change_Chinese_Click(object sender, EventArgs e)
@@ -574,8 +634,8 @@ namespace TrOCR
             interface_flag = IniHelper.GetValue("配置", "接口");
             if (interface_flag == "发生错误")
             {
-                IniHelper.SetValue("配置", "接口", "搜狗");
-                OCR_foreach("搜狗");
+                IniHelper.SetValue("配置", "接口", "我的");
+                OCR_foreach("我的");
             }
             else
             {
@@ -1474,7 +1534,14 @@ namespace TrOCR
             try
             {
                 var image = new BinaryBitmap(new HybridBinarizer(new BitmapLuminanceSource((Bitmap)image_screen)));
-                var result2 = new QRCodeReader().decode(image);
+                //BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource((Bitmap)image_screen)));
+
+                Dictionary<DecodeHintType, Object> mHints = new Dictionary<DecodeHintType, Object>();
+                mHints.Add(DecodeHintType.CHARACTER_SET, "utf-8");
+                mHints.Add(DecodeHintType.TRY_HARDER, true);
+                mHints.Add(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
+
+                var result2 = new QRCodeReader().decode(image, mHints);
                 if (result2 != null)
                 {
                     result = result2.Text;
@@ -2037,6 +2104,13 @@ namespace TrOCR
             if (interface_flag == "有道")
             {
                 OCR_youdao();
+                fmloading.FmlClose = "窗体已关闭";
+                Invoke(new OcrThread(Main_OCR_Thread_last));
+                return;
+            }
+            if (interface_flag == "我的")
+            {
+                OCR_mine();
                 fmloading.FmlClose = "窗体已关闭";
                 Invoke(new OcrThread(Main_OCR_Thread_last));
                 return;
@@ -2761,23 +2835,28 @@ namespace TrOCR
                     baidu.Text = "百度√";
                     ch_en.Text = "中英√";
                     break;
-                case "搜狗":
+                case "搜狗": // MARK 变更为本地CL
                     interface_flag = "搜狗";
                     //todo
-                    Init_model(0);
+                    // Init_model(0);
                     Refresh();
                     sougou.Text = "本地CL√";
                     break;
-                case "腾讯":
+                case "腾讯": // MARK 变更为本地Paddle
                     interface_flag = "腾讯";
                     Refresh();
                     tencent.Text = "本地Paddle√";
-                    Init_model(1);
+                    // Init_model(1);
                     break;
                 case "有道":
                     interface_flag = "有道";
                     Refresh();
                     youdao.Text = "有道√";
+                    break;
+                case "我的":
+                    interface_flag = "我的";
+                    Refresh();
+                    mine.Text = "我的√";
                     break;
                 case "公式":
                     interface_flag = "公式";
@@ -4797,6 +4876,7 @@ namespace TrOCR
             tencent.Text = "本地Paddle";
             baidu.Text = "百度";
             youdao.Text = "有道";
+            mine.Text = "我的";
             shupai.Text = "竖排";
             ocr_table.Text = "表格";
             ch_en.Text = "中英";

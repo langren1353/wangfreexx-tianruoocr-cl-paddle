@@ -141,7 +141,7 @@ namespace TrOCR
                 IniHelper.CreatConfig();
 
 
-                IniHelper.SetValue("配置", "接口", "搜狗");
+                IniHelper.SetValue("配置", "接口", "我的");
                 IniHelper.SetValue("配置", "开机自启", "True");
                 IniHelper.SetValue("配置", "快速翻译", "True");
                 IniHelper.SetValue("配置", "识别弹窗", "True");
@@ -222,7 +222,7 @@ namespace TrOCR
         {
             if (IniHelper.GetValue("配置", "接口") == "发生错误")
             {
-                IniHelper.SetValue("配置", "接口", "搜狗");
+                IniHelper.SetValue("配置", "接口", "我的");
             }
 
             if (IniHelper.GetValue("配置", "开机自启") == "发生错误")
